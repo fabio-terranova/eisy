@@ -1,4 +1,4 @@
-# EISy - Electrochemical Impedance Spectroscopy tool
+# EISy - Electrochemical Impedance Spectroscopy made easy
 
 A Python library and web application for analyzing Electrochemical Impedance Spectroscopy (EIS) data.
 
