@@ -72,7 +72,8 @@
                                     <input type="text" id="synth-custom-circuit" placeholder="e.g., R1-(R2-W1)|Q1"
                                         oninput="updateSyntheticCircuitPreview()">
                                     <p class="help-text">
-                                        Syntax: R (resistor), C (capacitor), L (inductor), W (Warburg), Q (CPE), -
+                                        Syntax: R (resistor), C (capacitor), L (inductor), W (Warburg), Q (CPE), S
+                                        (Warburg Short), O (Warburg Open), -
                                         (series), | (parallel), () (grouping)
                                     </p>
                                 </div>
@@ -169,7 +170,7 @@
                             <button onclick="addPresetModel()" class="btn-auto">Add model</button>
                             <button onclick="customizePresetModel()" class="btn-auto">Customize model</button>
                         </div>
-                        
+
                         <h3>Custom model</h3>
                         <form onsubmit="addCustomModel(); return false;">
                             <label for="custom-circuit">Circuit string:</label>
@@ -189,7 +190,8 @@
 
                             <label for="custom-model-name">Model name:</label>
                             <div class="flex gap-2">
-                                <input type="text" id="custom-model-name" placeholder="e.g., My Custom Model" class="flex-1">
+                                <input type="text" id="custom-model-name" placeholder="e.g., My Custom Model"
+                                    class="flex-1">
                                 <button type="submit" class="btn-auto">Add custom model</button>
                             </div>
                         </form>
@@ -212,7 +214,7 @@
         <!-- Tab Content 3: Results -->
         <div class="tab-content" id="results-tab-content">
             <div class="results-layout">
-                
+
                 <div class="section">
                     <h2>Fitted plots</h2>
                     <div id="fitted-plot-container">

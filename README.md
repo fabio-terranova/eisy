@@ -103,7 +103,11 @@ EISy uses an intuitive string notation for defining equivalent circuits:
 - **R** - Resistor: `R1`, `R2`, etc.
 - **C** - Capacitor: `C1`, `C2`, etc.
 - **L** - Inductor: `L1`, `L2`, etc.
-- **W** - Warburg (diffusion): `W1`, `W2`, etc.
+- **W** - Warburg (semi-infinite diffusion): `W1`, `W2`, etc.
+- **S** - Warburg Short (transmissive boundary): `S1`, `S2`, etc.
+  - Short Warburg requires tuple parameters: `(Aw, B)` where Aw > 0 and B > 0
+- **O** - Warburg Open (reflective boundary): `O1`, `O2`, etc.
+  - Open Warburg requires tuple parameters: `(Aw, B)` where Aw > 0 and B > 0
 - **Q** - Constant Phase Element (CPE): `Q1`, `Q2`, etc.
   - CPE requires tuple parameters: `(Q, n)` where 0 < n ≤ 1
 
@@ -115,6 +119,9 @@ circuit = "R1-R2|Q1"
 
 # Randles with Warburg diffusion
 circuit = "R1-(R2-W1)|Q1"
+
+# Randles with Warburg with transmissive boundary
+circuit = "R1-(R2-S1)|Q1"
 
 # Multiple time constants
 circuit = "R1-R2|C1-R3|C2"

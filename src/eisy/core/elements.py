@@ -1,6 +1,11 @@
 import numpy as np
 
 
+def coth(x):
+    """Compute the hyperbolic cotangent of x."""
+    return 1 / np.tanh(x)
+
+
 class CircuitElement:
     def __init__(self, name=None):
         self.name = name
@@ -46,6 +51,26 @@ class Warburg(CircuitElement):
         real_part = Aw / np.sqrt(2 * np.pi * frequency)
         imag_part = Aw / (1j * np.sqrt(2 * np.pi * frequency))
         return real_part + imag_part
+
+
+class WarburgShort(CircuitElement):
+    def __str__(self):
+        return f"S{self.name}"
+
+    def impedance(self, frequency: float, params: tuple) -> complex:
+        Aw, B = params
+        omega = 2 * np.pi * frequency
+        return Aw * np.tanh(B * np.sqrt(1j * omega)) / np.sqrt(1j * omega)
+
+
+class WarburgOpen(CircuitElement):
+    def __str__(self):
+        return f"O{self.name}"
+
+    def impedance(self, frequency: float, params: tuple) -> complex:
+        Aw, B = params
+        omega = 2 * np.pi * frequency
+        return Aw * coth(B * np.sqrt(1j * omega)) / np.sqrt(1j * omega)
 
 
 class CPE(CircuitElement):

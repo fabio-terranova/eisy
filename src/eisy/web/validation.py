@@ -25,7 +25,7 @@ def validate_circuit_string(circuit_string):
         parse_circuit(circuit_string)
 
         # Extract element names from circuit string
-        elements = re.findall(r"[RCWQL]\d+", circuit_string)
+        elements = re.findall(r"[RCLWQSO]\d+", circuit_string)
 
         # Extract parameter names
         param_names = []
@@ -34,6 +34,10 @@ def validate_circuit_string(circuit_string):
                 # CPE needs two UI parameters but one internal parameter
                 param_names.append(elem)
                 param_names.append(f"{elem}_n")
+            elif elem[0] in ["S", "O"]:
+                # Warburg Short/Open need two parameters
+                param_names.append(elem)
+                param_names.append(f"{elem}_B")
             else:
                 param_names.append(elem)
 
