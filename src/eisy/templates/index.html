@@ -1,0 +1,333 @@
+<!-- jinja2: -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 EISy</title>
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🔬 EISy</h1>
+            <p class="subtitle">Electrochemical Impedance Spectroscopy data fitting tool</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('data')">Data</button>
+            <button class="tab" onclick="switchTab('fitting')" id="fitting-tab" disabled>Fitting</button>
+            <button class="tab" onclick="switchTab('results')" id="results-tab" disabled>Results</button>
+        </div>
+
+        <!-- Toast notification container -->
+        <div id="toast-container"></div>
+
+        <!-- Tab Content 1: Data -->
+        <div class="tab-content active" id="data-tab">
+
+            <div class="data-layout">
+                <div class="section collapsible">
+                    <div class="section-header" onclick="toggleCollapse('load-data-content')">
+                        <h2>Load data</h2>
+                        <span class="collapse-icon" id="load-data-icon">▼</span>
+                    </div>
+                    <div class="section-content" id="load-data-content">
+                        <p class="description-text">
+                            Upload experimental data or generate synthetic data for testing.
+                        </p>
+
+                        <div class="grid-2-col">
+                            <!-- Upload data section (left) -->
+                            <div id="file-upload-section" class="card">
+                                <h3 class="card-header">Real data</h3>
+                                <label for="data-file">Upload file (csv/txt):</label>
+                                <input type="file" id="data-file" accept=".csv,.txt" onchange="loadDataFile()">
+                                <p class="text-sm text-muted">
+                                    Supported formats:<br>
+                                    - Standard csv/txt: frequency, Z_real, Z_imag (comma or tab separated)<br>
+                                    - LCR6100 txt: GW Instek LCR-6100 measurement file
+                                </p>
+                            </div>
+
+                            <!-- Synthetic data section (right) -->
+                            <div id="synthetic-section" class="card">
+                                <h3 class="card-header">Synthetic data</h3>
+
+                                <label for="synth-circuit">Circuit for synthetic data:</label>
+                                <select id="synth-circuit" onchange="updateSyntheticParams()">
+                                    {% for key, model in circuit_models.items() %}
+                                    <option value="{{ key }}">{{ key }}</option>
+                                    {% endfor %}
+                                    <option value="custom">Custom circuit</option>
+                                </select>
+
+                                <!-- Custom circuit input (hidden by default) -->
+                                <div id="synth-custom-circuit-container" class="hidden-default mt-2">
+                                    <label for="synth-custom-circuit">Custom circuit string:</label>
+                                    <input type="text" id="synth-custom-circuit" placeholder="e.g., R1-(R2-W1)|Q1"
+                                        oninput="updateSyntheticCircuitPreview()">
+                                    <p class="help-text">
+                                        Syntax: R (resistor), C (capacitor), L (inductor), W (Warburg), Q (CPE), -
+                                        (series), | (parallel), () (grouping)
+                                    </p>
+                                </div>
+
+                                <!-- Circuit preview for synthetic data -->
+                                <div id="synth-circuit-preview-container" class="circuit-preview-container">
+                                    <label class="circuit-preview-label">Circuit preview:</label>
+                                    <div id="synth-circuit-preview" class="circuit-preview-content">
+                                    </div>
+                                </div>
+
+                                <div id="synth-params"></div>
+
+                                <div class="synth-params-grid">
+                                    <div class="param-item">
+                                        <label for="freq-min">Min frequency (Hz):</label>
+                                        <input type="number" id="freq-min" value="1" step="any">
+                                    </div>
+
+                                    <div class="param-item">
+                                        <label for="freq-max">Max frequency (Hz):</label>
+                                        <input type="number" id="freq-max" value="100000" step="any">
+                                    </div>
+
+                                    <div class="param-item">
+                                        <label for="num-points">Number of points:</label>
+                                        <input type="number" id="num-points" value="50">
+                                    </div>
+
+                                    <div class="param-item">
+                                        <label for="noise-level">Noise level:</label>
+                                        <input type="number" id="noise-level" value="0.05" step="0.01" min="0" max="1">
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-2 mt-2">
+                                    <button onclick="generateData()" class="flex-1">Generate synthetic data</button>
+                                    <button onclick="downloadSyntheticCSV()" class="flex-1 btn-success">Download
+                                        CSV</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section hidden-default" id="data-preview-section">
+                    <h2>Data preview</h2>
+                    <div id="plot-container">
+                        <div class="plot nyquist-container">
+                            <div id="nyquist-plot"></div>
+                            <div class="selection-info-panel">
+                                <p class="selection-info-text">
+                                    <strong>Points for fitting:</strong> Use the box select or lasso tool on the Nyquist
+                                    plot to select specific points for fitting.
+                                </p>
+                                <div id="selection-info"></div>
+                                <div class="flex gap-2 mt-2">
+                                    <button onclick="clearSelection()" class="btn-sm btn-secondary">
+                                        Clear selection (use all points)
+                                    </button>
+                                    <button onclick="switchTab('fitting')" class="btn-sm btn-primary ml-2">
+                                        Go to fitting
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bode-plots-container">
+                            <div class="plot">
+                                <div id="magnitude-plot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content 2: Fitting -->
+        <div class="tab-content" id="fitting-tab-content">
+            <div class="fitting-layout">
+                <div>
+                    <div class="section">
+                        <h2>Add models</h2>
+                        <p class="description-text">
+                            Select models from presets or enter custom circuit strings.
+                        </p>
+
+                        <h3>Preset models</h3>
+                        <div class="add-model-section">
+                            <select id="preset-model-select">
+                                {% for key, model in circuit_models.items() %}
+                                <option value="{{ key }}">{{ key }} - {{ model.description }}</option>
+                                {% endfor %}
+                            </select>
+                            <button onclick="addPresetModel()" class="btn-auto">Add model</button>
+                            <button onclick="customizePresetModel()" class="btn-auto">Customize model</button>
+                        </div>
+                        
+                        <h3>Custom model</h3>
+                        <form onsubmit="addCustomModel(); return false;">
+                            <label for="custom-circuit">Circuit string:</label>
+                            <input type="text" id="custom-circuit" placeholder="e.g., R1-(R2-W1)|Q1"
+                                oninput="updateCircuitPreview()">
+                            <p class="syntax-help">
+                                Syntax: R (resistor), C (capacitor), L (inductor), W (Warburg), Q (CPE), - (series), |
+                                (parallel), () (grouping)
+                            </p>
+
+                            <!-- Circuit preview -->
+                            <div id="circuit-preview-container" class="circuit-preview-container mb-3">
+                                <label class="circuit-preview-label">Preview:</label>
+                                <div id="circuit-preview" class="circuit-preview-content">
+                                </div>
+                            </div>
+
+                            <label for="custom-model-name">Model name:</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="custom-model-name" placeholder="e.g., My Custom Model" class="flex-1">
+                                <button type="submit" class="btn-auto">Add custom model</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section">
+                        <h2>Selected models</h2>
+                        <div id="model-list" class="model-list"></div>
+
+                        <button onclick="fitAllModels()" id="fit-button" disabled class="mt-3">
+                            Fit models to data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content 3: Results -->
+        <div class="tab-content" id="results-tab-content">
+            <div class="results-layout">
+                
+                <div class="section">
+                    <h2>Fitted plots</h2>
+                    <div id="fitted-plot-container">
+                        <div class="plot nyquist-container">
+                            <div id="fitted-nyquist-plot"></div>
+                        </div>
+                        <div class="bode-plots-container">
+                            <div class="plot">
+                                <div id="fitted-bode-plot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Model comparison</h2>
+                    <div id="results-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reusable templates -->
+    <template id="toast-template">
+        <div class="toast">
+            <div class="toast-icon"></div>
+            <div class="toast-content"></div>
+            <button class="toast-close" type="button">x</button>
+        </div>
+    </template>
+
+    <template id="no-models-template">
+        <p class="no-models-message">No models added yet</p>
+    </template>
+
+    <template id="model-item-template">
+        <div class="model-item collapsed">
+            <div class="model-item-header">
+                <span class="collapse-icon">▼</span>
+                <div class="model-item-title">
+                    <div class="model-name"></div>
+                    <div class="model-circuit">
+                        <span class="model-circuit-text"></span>
+                        <div class="model-circuit-diagram"></div>
+                    </div>
+                </div>
+                <div class="model-item-actions">
+                    <button type="button" class="modify-circuit-button">Modify circuit</button>
+                    <button type="button" class="remove-model-button btn-red">Remove</button>
+                </div>
+            </div>
+            <div class="model-item-content">
+                <div class="model-params">
+                    <h4>Initial parameter guesses</h4>
+                    <div class="param-grid"></div>
+                    <p class="no-params-message">No parameters
+                    </p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="param-input-template">
+        <div class="param-item">
+            <label></label>
+            <input type="number" step="any">
+        </div>
+    </template>
+
+    <template id="circuit-error-template">
+        <p class="circuit-error-message"></p>
+    </template>
+
+    <template id="result-card-template">
+        <div class="result-card-compact">
+            <h4>
+                <span class="result-model-name"></span>
+                <span class="badge badge-best hidden-default">BEST</span>
+                <span class="badge badge-failed hidden-default">FAIL</span>
+            </h4>
+            <div class="model-circuit">
+                <span class="result-circuit-text"></span>
+                <div class="result-circuit-diagram"></div>
+            </div>
+            <div class="r-squared"></div>
+            <table class="param-table"></table>
+            <p class="result-error hidden-default"></p>
+            <button type="button" class="copy-results-button">Copy results</button>
+        </div>
+    </template>
+
+    <template id="result-param-row-template">
+        <tr>
+            <td class="param-name"></td>
+            <td class="param-value"></td>
+        </tr>
+    </template>
+
+    <!-- Initialize circuit models from Flask -->
+    <script id="circuit-models-data" type="application/json">
+        {{ circuit_models | tojson }}
+    </script>
+    <script>
+        // Parse JSON from a safe JSON script tag to avoid editor/lexer errors with template tags inside JS
+        window.circuitModels = JSON.parse(document.getElementById('circuit-models-data').textContent);
+    </script>
+
+    <!-- External JavaScript files -->
+    <script src="{{ url_for('static', filename='js/circuit_diagram.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <!-- Footer -->
+    <footer>
+        Fabio Terranova - 2025
+    </footer>
+</body>
+
+</html>

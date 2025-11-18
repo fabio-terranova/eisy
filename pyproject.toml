@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "eisy"
+version = "0.1.0"
+description = "A library for electrical impedance spectroscopy (EIS) data analysis."
+authors = [{ name = "Fabio Terranova" }]
+license = { file = "LICENSE" }
+readme = "README.md"
+dependencies = [
+    "argparse",
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "scipy",
+    "flask",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "flake8",
+    "pre-commit",
+]
+
+[project.scripts]
+eisy = "eisy:cli"
+eisy-web = "eisy:run_web_app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/eisy"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/eisy/templates" = "eisy/templates"
+
+[tool.hatch.envs.default]
+dependencies = ["pre-commit"]
