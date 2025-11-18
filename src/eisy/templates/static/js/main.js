@@ -9,6 +9,7 @@ let selectedPointIndices = null;
 // Helper function to get default parameter value
 function getDefaultParamValue(param) {
     if (param.endsWith('_n')) return 0.9;
+    if (param.endsWith('_B')) return 1;
     if (param.startsWith('Q') || param.startsWith('C')) return 1e-6;
     return 1000;
 }
@@ -16,7 +17,10 @@ function getDefaultParamValue(param) {
 // Helper function to get parameter with unit for display
 function paramPlusUnit(param) {
     if (param.endsWith('_n')) return `${param} (unitless)`;
-    const units = { 'R': 'Ω', 'L': 'H', 'W': 'Ω/sqrt(s)', 'C': 'F', 'Q': 'F' };
+    if (param.endsWith('_B')) return `${param} (sqrt(s))`;
+    const units = {
+        'R': 'Ω', 'L': 'H', 'W': 'Ω/sqrt(s)', 'C': 'F', 'Q': 'F', 'S': 'Ω/sqrt(s)', 'O': 'Ω/sqrt(s)'
+    };
     return `${param} (${units[param.charAt(0)] || ''})`;
 }
 

@@ -7,6 +7,8 @@ const ELEMENT_SVG_PATHS = {
     'C': '/static/svg/capacitor.svg',
     'L': '/static/svg/inductor.svg',
     'W': '/static/svg/warburg.svg',
+    'S': '/static/svg/warburg.svg', // To be replaced
+    'O': '/static/svg/warburg.svg', // To be replaced
     'Q': '/static/svg/cpe.svg'
 };
 
@@ -16,9 +18,9 @@ function parseCircuitToAST(circuit) {
     if (circuitCache.has(circuit)) {
         return circuitCache.get(circuit);
     }
-    
+
     circuit = circuit.trim();
-    
+
     if (!circuit) {
         throw new Error('Empty circuit string');
     }
@@ -57,7 +59,7 @@ function parseCircuitInternal(circuit) {
     }
 
     // Base case: single element
-    const match = circuit.match(/^([RCLWQ])(\d+)$/);
+    const match = circuit.match(/^([RCLWQSO])(\d+)$/);
     if (match) {
         return {
             type: 'element',
@@ -67,7 +69,7 @@ function parseCircuitInternal(circuit) {
         };
     }
 
-    throw new Error(`Invalid element: "${circuit}". Expected format: R1, C2, Q3, etc.`);
+    throw new Error(`Invalid element: "${circuit}". Expected format: R1, C2, Q3, S4, O5, etc.`);
 }
 
 function splitByOperator(str, operator) {
@@ -355,7 +357,7 @@ function generateCircuitDiagram(circuit, useAST = true) {
     }
 
     // Simple fallback: just show elements in a row
-    const elementRegex = /([RCLWQ])(\d+)/g;
+    const elementRegex = /([RCLWQSO])(\d+)/g;
     const elements = [];
     let match;
     while ((match = elementRegex.exec(circuit)) !== null) {
