@@ -1,7 +1,16 @@
 import numpy as np
 from scipy.optimize import curve_fit
 
-from .elements import CPE, Capacitor, CircuitElement, Inductor, Resistor, Warburg
+from .elements import (
+    CPE,
+    Capacitor,
+    CircuitElement,
+    Inductor,
+    Resistor,
+    Warburg,
+    WarburgOpen,
+    WarburgShort,
+)
 
 
 class CircuitNode:
@@ -23,6 +32,9 @@ class CircuitNode:
                 if key.startswith("Q"):  # CPE parameter
                     lower_bounds.extend([eps, eps])  # C_n: C > 0, n > 0
                     upper_bounds.extend([np.inf, 1.0])  # n <= 1
+                elif key.startswith("S") or key.startswith("O"):  # Warburg Short/Open
+                    lower_bounds.extend([eps, eps])  # Aw > 0, B > 0
+                    upper_bounds.extend([np.inf, np.inf])
                 else:
                     lower_bounds.extend([eps] * length)  # all other params > 0
                     upper_bounds.extend([np.inf] * length)
@@ -275,6 +287,10 @@ def _create_element_node(element_str: str) -> ElementNode:
         element = Inductor(name=element_id)
     elif element_type == "W":
         element = Warburg(name=element_id)
+    elif element_type == "S":
+        element = WarburgShort(name=element_id)
+    elif element_type == "O":
+        element = WarburgOpen(name=element_id)
     elif element_type == "Q":
         element = CPE(name=element_id)
     else:
