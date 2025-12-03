@@ -9,7 +9,7 @@ const ELEMENT_SVG_PATHS = {
     'W': '/static/svg/warburg.svg',
     'S': '/static/svg/warburg.svg', // To be replaced
     'O': '/static/svg/warburg.svg', // To be replaced
-    'Q': '/static/svg/cpe.svg'
+    'Q': '/static/svg/CPE.svg'
 };
 
 // Parse circuit string to AST (client-side parser)
