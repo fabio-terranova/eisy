@@ -33,8 +33,5 @@ eisy-web = "eisy:run_web_app"
 [tool.hatch.build.targets.wheel]
 packages = ["src/eisy"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"src/eisy/templates" = "eisy/templates"
-
 [tool.hatch.envs.default]
 dependencies = ["pre-commit"]
