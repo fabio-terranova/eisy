@@ -2,6 +2,8 @@
 
 A Python library and web application for analyzing Electrochemical Impedance Spectroscopy (EIS) data.
 
+<img width="1419" height="1247" alt="image" src="https://github.com/user-attachments/assets/36ccf7d7-efe7-4c4e-a89a-f44cd89d43c3" />
+
 ## Installation
 
 Install EISy using pip:
