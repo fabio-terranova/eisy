@@ -2,7 +2,7 @@
 
 A Python library and web application for analyzing Electrochemical Impedance Spectroscopy (EIS) data.
 
-<img width="1419" height="1247" alt="image" src="https://github.com/user-attachments/assets/36ccf7d7-efe7-4c4e-a89a-f44cd89d43c3" />
+<img width="2766" height="2327" alt="image" src="https://github.com/user-attachments/assets/1b99fbf2-b8bf-4d9e-9a51-76f2b88dcbd3" />
 
 ## Installation
 
